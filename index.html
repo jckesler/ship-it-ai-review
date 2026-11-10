@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ship It?</title>
+<meta name="description" content="A 10 to 12 minute game about launch review for an AI feature: work out which rules apply, then see what happens when the law changes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Same visual system as The 2AM Page and Keys to the Agent. */
+:root{
+  --bg:#f3f1ee; --panel:#ffffff; --ink:#1c1a19; --muted:#6a6460; --line:#dcd6d0;
+  --red:#cc0000; --red-soft:#fbe6e6; --aqua:#00796b; --aqua-soft:#e2f2ef; --amber:#a35a00; --amber-soft:#fbefdc;
+  --good:#2e7d4f; --good-soft:#e3f2e8; --shadow:0 1px 0 rgba(0,0,0,.04);
+  --f-display:"Barlow Semi Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#161413; --panel:#211e1c; --ink:#f1ece8; --muted:#a69d97; --line:#3a3532;
+  --red:#ff6b6b; --red-soft:#3a1f1f; --aqua:#4fc3b1; --aqua-soft:#16302c; --amber:#f0a94b; --amber-soft:#35281a;
+  --good:#6fcf97; --good-soft:#18301f; --shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161413; --panel:#211e1c; --ink:#f1ece8; --muted:#a69d97; --line:#3a3532;
+  --red:#ff6b6b; --red-soft:#3a1f1f; --aqua:#4fc3b1; --aqua-soft:#16302c; --amber:#f0a94b; --amber-soft:#35281a;
+  --good:#6fcf97; --good-soft:#18301f; --shadow:none; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
+.credit{margin-top:32px;padding-top:12px;border-top:1px solid var(--line);font-size:12px;color:var(--muted)}
+.credit a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;line-height:1.1;text-wrap:balance;margin:0}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--aqua);outline-offset:2px}
+a{color:var(--aqua)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:3px solid var(--red);padding-bottom:10px;margin-bottom:22px}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:28px;letter-spacing:.01em}
+.brand .eyebrow{color:var(--red)}
+.linkbtn{background:none;border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:14px;color:var(--muted)}
+.linkbtn:hover{border-color:var(--ink);color:var(--ink)}
+.intro{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:start}
+.intro .lede{font-size:19px;max-width:60ch}
+.intro h2{font-size:44px;margin:6px 0 14px}
+.rules{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow)}
+.rules ul{margin:8px 0 0;padding-left:18px}
+.rules li{margin:6px 0}
+.cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:26px}
+.case{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px;text-align:left}
+.case:hover{border-color:var(--ink)}
+.case h3{font-size:21px}
+.case p{margin:0;font-size:14px;color:var(--muted)}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);align-self:flex-start}
+.primary{background:var(--red);color:#fff;border:0;border-radius:8px;padding:13px 22px;font-weight:600;font-size:16px}
+.primary:hover{filter:brightness(1.08)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}
+.note{font-size:13px;color:var(--muted)}
+.game{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+.scene{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.scene-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line)}
+.clock{font-family:var(--f-mono);font-weight:600;font-size:15px;color:var(--red)}
+.step{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.scene-body{padding:20px 22px 24px}
+.scene-body h2{font-size:30px;margin-bottom:10px}
+.scene-body p{margin:0 0 12px;max-width:68ch}
+.inject{border-left:4px solid var(--ink);background:var(--bg);padding:10px 14px;border-radius:0 8px 8px 0;margin:4px 0 16px;font-size:15px}
+.inject .eyebrow{display:block;margin-bottom:2px}
+.outcome{border-radius:10px;padding:14px 16px;margin:4px 0 16px;border:1px solid var(--line)}
+.outcome.l0{background:var(--good-soft);border-color:var(--good)}
+.outcome.l1{background:var(--amber-soft);border-color:var(--amber)}
+.outcome.l2{background:var(--red-soft);border-color:var(--red)}
+.outcome .verdict{display:block;margin-bottom:4px}
+.l0 .verdict{color:var(--good)} .l1 .verdict{color:var(--amber)} .l2 .verdict{color:var(--red)}
+.outcome p{margin:0}
+.ask{font-weight:600;margin-top:4px!important}
+.choices{display:grid;gap:10px;margin-top:8px}
+.choice{display:grid;grid-template-columns:32px minmax(0,1fr);gap:12px;align-items:start;text-align:left;background:var(--panel);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px}
+.choice:hover{border-color:var(--ink)}
+.choice .k{font-family:var(--f-mono);font-weight:600;border:1px solid var(--line);border-radius:6px;text-align:center;padding:2px 0;color:var(--muted)}
+.choice[disabled]{cursor:default;opacity:.55}
+.choice.picked{opacity:1;border-color:var(--ink)}
+.result{margin-top:18px;border-radius:10px;padding:16px 18px;border:1px solid var(--line);background:var(--bg)}
+.result.best{background:var(--good-soft);border-color:var(--good)}
+.result.ok{background:var(--amber-soft);border-color:var(--amber)}
+.result.poor{background:var(--red-soft);border-color:var(--red)}
+.verdict{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.best .verdict{color:var(--good)} .ok .verdict{color:var(--amber)} .poor .verdict{color:var(--red)}
+.result p{margin:6px 0 0}
+.lesson{font-size:14px;color:var(--muted);margin-top:8px!important}
+.result .primary{margin-top:14px}
+.rail{display:grid;gap:16px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px)}
+.board{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.board h3{font-size:18px;margin-bottom:10px}
+.co{font-weight:600}
+.co-sub{font-size:13px;color:var(--muted);margin-bottom:12px}
+.meter{margin:10px 0}
+.meter .lab{display:flex;justify-content:space-between;font-size:13px}
+.meter .lab b{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums}
+.meter .hint{font-size:11px;color:var(--muted)}
+.bar{height:8px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--line);margin-top:4px}
+.bar i{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+.legs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.leg{font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted)}
+.leg.on{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+.leg.half{border-color:var(--amber);color:var(--amber);background:var(--amber-soft)}
+.log{list-style:none;margin:0;padding:0;font-size:13px;max-height:320px;overflow:auto}
+.log li{display:grid;grid-template-columns:76px minmax(0,1fr);gap:8px;padding:7px 0;border-top:1px dashed var(--line)}
+.log li:first-child{border-top:0}
+.log time{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.log .empty{display:block;color:var(--muted);font-style:italic}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.progress{display:flex;gap:4px;padding:10px 20px 14px;border-top:1px solid var(--line)}
+.progress span{flex:1;height:6px;border-radius:99px;background:var(--line)}
+.progress span.done{background:var(--ink)}
+.progress span.now{background:var(--red)}
+.progress span.live{outline:1px dashed var(--muted);outline-offset:1px}
+.end h2{font-size:40px;margin:6px 0 10px}
+.grid2{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat .n{font-family:var(--f-mono);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat .l{font-size:13px;color:var(--muted)}
+.trifecta{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:22px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px}
+.trifecta svg{width:100%;height:auto}
+.trifecta svg text{font-family:var(--f-mono);font-size:11px;fill:var(--ink)}
+.debrief{display:grid;gap:10px;margin-top:10px}
+.dl{background:var(--panel);border:1px solid var(--line);border-left-width:5px;border-radius:8px;padding:12px 14px}
+.dl.best{border-left-color:var(--good)} .dl.ok{border-left-color:var(--amber)} .dl.poor{border-left-color:var(--red)}
+.dl .h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;color:var(--muted);font-family:var(--f-mono)}
+.dl p{margin:6px 0 0;font-size:15px}
+.real{background:var(--aqua-soft);border:1px solid var(--aqua);border-radius:10px;padding:16px 18px;margin-top:22px}
+.real h3{font-size:22px;color:var(--aqua);margin-bottom:6px}
+.real ul{margin:6px 0 0;padding-left:18px}
+.real li{margin:6px 0}
+.sec{margin-top:28px}
+.sec>h3{font-size:24px;margin-bottom:8px}
+@media (max-width:860px){.game,.intro,.trifecta{grid-template-columns:minmax(0,1fr)}.rail{position:static}.cases,.grid2{grid-template-columns:minmax(0,1fr)}.intro h2{font-size:34px}}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+@media print{
+  :root,:root[data-theme="dark"]{--bg:#ffffff;--panel:#ffffff;--ink:#1c1a19;--muted:#555;--line:#cfcfcf;color-scheme:light}
+  body{background:#fff;font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  .topbar{margin-bottom:12px}
+  #homeBtn,.end .row,.rail .log{display:none!important}
+  .game{display:block}
+  .rail{display:none!important}
+  .grid2{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .trifecta{grid-template-columns:200px minmax(0,1fr)!important}
+  .dl,.stat,.real,.outcome,.trifecta{break-inside:avoid;page-break-inside:avoid}
+  .printonly{display:block!important}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;box-shadow:none!important}
+  @page{margin:14mm}
+}
+.printonly{display:none}
+</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <div class="brand"><h1>Ship It?</h1><span class="eyebrow">AI launch review</span></div>
+    <button class="linkbtn" id="homeBtn" hidden>New scenario</button>
+  </header>
+  <main id="app"></main>
+  <footer class="credit">&copy; 2026 Chuck Kesler &middot; Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" rel="license noopener" target="_blank">CC BY-NC 4.0</a> &middot; Law as of November 2026 &middot; An educational game, not legal advice</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var M = {sch:'Launch schedule', exp:'Legal exposure', tru:'Customer trust'};
+var HINT = {sch:'higher is better', exp:'lower is better', tru:'higher is better'};
+
+/* Each step: label, title, text, choices (t, v, fx, r, l). v = best / ok / poor. */
+var C = [];
+
+C.push({
+ id:'larkspur', name:'Larkspur HR', sector:'HR and benefits software vendor · Denver, CO', tag:'Hiring AI',
+ blurb:'1,400 business customers in the US and Europe. Product wants to ship an AI feature that ranks job applicants.',
+ feature:'TalentRank', pitch:'Product wants to launch <b>TalentRank</b>, an AI feature that reads applications and ranks candidates for customers\' recruiters. Customers in the US and the EU are asking for it, and sales has promised a date.',
+ start:{sch:70, exp:30, tru:70},
+ steps:[
+  {label:'Review 1', title:'What kind of AI is this?', text:'<p>Legal asks a basic question first: where does TalentRank sit under the EU AI Act, given that customers in the EU will use it?</p>',
+   choices:[
+    {t:'High-risk. AI used to rank and filter job applicants is on the Act\'s high-risk list.', v:'best', fx:{exp:-10, sch:-5},
+     r:'Legal agrees, and the team plans for the high-risk duties: risk management, documentation, human oversight and testing.',
+     l:'Hiring is one of the Act\'s high-risk uses. The Act\'s narrow exceptions don\'t cover a system that profiles people, and ranking candidates does, so a recruiter making the final call doesn\'t take it off the list.', ref:'EU AI Act risk tiers'},
+    {t:'Probably minimal risk, since a recruiter always makes the final decision.', v:'ok', fx:{exp:10},
+     r:'Legal pushes back: the Act lists AI used to filter applications and evaluate candidates as high-risk, with or without a human signing off.',
+     l:'Human review matters, but it doesn\'t change the tier for a tool that ranks people for jobs.', ref:'EU AI Act risk tiers'},
+    {t:'Not covered at all, because Larkspur is an American company.', v:'poor', fx:{exp:20, tru:-5},
+     r:'Outside counsel corrects this quickly. Like GDPR, the Act reaches providers whose AI systems are used in the EU.',
+     l:'Selling into the EU, or the system\'s output being used there, brings a company within reach, wherever it\'s based.', ref:'EU AI Act scope'}
+  ]},
+  {label:'Review 2', title:'Who carries the obligations?', text:'<p>A large EU customer asks who is responsible for meeting the Act\'s requirements: Larkspur, which builds TalentRank, or the employer that uses it?</p>',
+   choices:[
+    {t:'Both. Larkspur is the provider and the employer is a deployer, and each has its own duties.', v:'best', fx:{exp:-5, tru:5},
+     r:'The customer is relieved to get a straight answer, and asks for the documentation Larkspur will provide to help it meet its own duties.',
+     l:'The Act separates the provider, who builds the system, from the deployer, who uses it. Both have obligations.', ref:'Provider and deployer'},
+    {t:'Mostly the employer, since it makes the hiring decisions.', v:'ok', fx:{exp:10},
+     r:'The customer\'s lawyers disagree, and the deal slows down while the two sides sort out who owes what.',
+     l:'Deployers have duties, but the heaviest high-risk obligations sit with the provider.', ref:'Provider and deployer'},
+    {t:'Nobody yet. The high-risk rules were deferred, so they may never happen.', v:'poor', fx:{exp:15, tru:-10},
+     r:'The customer notes that the rules were deferred to December 2027, not dropped, and starts talking to a competitor.',
+     l:'"The AI Act was delayed" is only partly true. The high-risk obligations moved to December 2027; they didn\'t go away.', ref:'EU AI Act dates'}
+  ]},
+  {label:'Review 3', title:'Training on customers\' applicants', text:'<p>The data science team wants to make TalentRank more accurate by training it on the applicant data Larkspur already holds for its customers: millions of past applications.</p>',
+   choices:[
+    {t:'Only where customer contracts allow it, and with the data minimized and pseudonymized first. Ask customers.', v:'best', fx:{exp:-10, sch:-5, tru:5},
+     r:'Most customers agree for a subset of data under updated terms. A few say no, and their data stays out.',
+     l:'For its customers\' applicant data, Larkspur is a processor and can use it only as its customers instruct. Training its own model is a new purpose: Larkspur would need customer agreement, its own legal basis, and a way to tell applicants.', ref:'Processors and training data'},
+    {t:'Go ahead, but strip names and email addresses first.', v:'ok', fx:{exp:10},
+     r:'Removing names helps, but pseudonymized data is still personal data for a company that can link it back, and the customers never agreed to this use.',
+     l:'Pseudonymization reduces risk. It doesn\'t create permission that the contract doesn\'t give.', ref:'Pseudonymization'},
+    {t:'Go ahead. The terms of service already allow "product improvement."', v:'poor', fx:{exp:20, tru:-15, sch:5},
+     r:'A customer\'s privacy team spots the clause and asks whether its applicants\' data is in the model. Nobody can say no.',
+     l:'Regulators have warned AI companies that using customer data for training beyond what they promised can be unfair or deceptive. There\'s no AI exemption.', ref:'Vendor training on customer data'}
+  ]},
+  {label:'Review 4', title:'A California customer asks', text:'<p>A large California employer plans to use TalentRank and asks what California\'s rules on automated decision-making, which apply from January 2027, will mean for it.</p>',
+   choices:[
+    {t:'Help them give applicants notice before use, offer an opt-out or a human appeal, and explain decisions on request.', v:'best', fx:{exp:-10, tru:5, sch:-5},
+     r:'Larkspur adds a notice template, an appeal workflow and a decision explanation to the product. Other customers want them too.',
+     l:'Hiring is a "significant decision" under the California rules. A vendor that builds in the pieces customers need sells more easily.', ref:'Automated decision-making'},
+    {t:'Tell them it\'s their obligation as the business using the tool, not Larkspur\'s.', v:'ok', fx:{tru:-5, exp:5},
+     r:'Under the privacy rules, the duties fall mostly on the employer. California\'s employment discrimination rules can also reach a vendor screening applicants on an employer\'s behalf. The customer decides the vendor that helps is worth paying for.',
+     l:'Even where the law puts the duty on the customer, the product decides whether they can meet it.', ref:'Automated decision-making'},
+    {t:'Tell them California doesn\'t regulate AI hiring tools.', v:'poor', fx:{exp:15, tru:-10},
+     r:'The customer\'s counsel sends Larkspur a copy of the regulations.',
+     l:'California\'s privacy agency adopted rules on automated decision-making technology in 2025 that apply from January 2027, and its employment discrimination rules already cover automated hiring tools.', ref:'Automated decision-making'}
+  ]},
+  {label:'News flash', flash:true, title:'Colorado changes the rules', text:'<div class="inject"><span class="eyebrow">May 2026 · Denver</span>Colorado repeals the broad AI law it passed in 2024, which Larkspur\'s compliance program was built around, and replaces it with a narrower law effective January 2027: notice before use, an explanation after an adverse decision, a way to correct wrong data, and human review in some cases.</div><p>Larkspur is headquartered in Denver. Last year it built a risk management program and impact-assessment documentation for its customers around the old law. What now?</p>',
+   choices:[
+    {t:'Keep the risk management work, which the EU requires anyway, and build in support for Colorado\'s new notice, explanation, correction and review steps.', v:'best', fx:{exp:-10, tru:5},
+     r:'Most of last year\'s work carries over. The new Colorado steps fit into the California workflow already being built.',
+     l:'In AI law, plan for the rules to change. Build controls that satisfy several laws at once, so one change doesn\'t mean starting over.', ref:'Watching for change'},
+    {t:'Pause all Colorado work until the lawsuits over AI regulation settle down.', v:'ok', fx:{exp:5, sch:5},
+     r:'The new law still applies to decisions from January 2027. A lawsuit has paused enforcement for now, but nothing has been struck down, and the duties can be enforced as soon as the pause ends. The team is now behind.',
+     l:'Waiting for certainty can mean waiting forever. Plan for what\'s in force and what\'s coming.', ref:'Watching for change'},
+    {t:'Scrap the compliance program. The law that required it is gone.', v:'poor', fx:{exp:20, sch:10, tru:-5},
+     r:'Two months later, an EU customer asks for the risk documentation the program produced. It no longer exists.',
+     l:'The work served more than one law. Tearing it down because one law changed leaves gaps everywhere else.', ref:'Watching for change'}
+  ]},
+  {label:'Launch call', title:'Ship it?', text:'<p>Sales wants a date. What\'s your recommendation for the EU launch?</p>',
+   choices:[
+    {t:'Launch with a recruiter reviewing every rejection, and a plan to meet the high-risk duties before December 2027.', v:'best', fx:{exp:-5, tru:10, sch:-5},
+     r:'The launch goes ahead on a slightly later date. Customers like the human review step, and as long as recruiters really weigh each case, it keeps decisions from being solely automated.',
+     l:'GDPR already restricts decisions based solely on automated processing that significantly affect people, and a rejected job application is one.', ref:'GDPR Article 22'},
+    {t:'Hold the EU launch until December 2027, when the high-risk rules apply.', v:'ok', fx:{sch:-25, exp:-5},
+     r:'Safe, and a competitor takes most of the EU customers in the meantime.',
+     l:'Waiting avoids the risk, at a business cost. The rules can be met before they\'re enforced.', ref:'Launch decisions'},
+    {t:'Launch with fully automated rejections to save recruiters time.', v:'poor', fx:{exp:25, tru:-15, sch:10},
+     r:'An applicant in Germany asks why she was rejected and who reviewed it. The answer is nobody.',
+     l:'A solely automated rejection triggers GDPR Article 22 rights, and it\'s exactly what the high-risk rules are designed to prevent.', ref:'GDPR Article 22'}
+  ]}
+ ],
+ law:['EU AI Act: AI used in recruitment and selection is high-risk. Those obligations apply from 2 December 2027, after an amendment adopted in July 2026; the prohibitions, AI literacy and transparency rules already apply.',
+      'GDPR Article 22 gives people rights around decisions based solely on automated processing that significantly affect them.',
+      'California\'s rules on automated decision-making technology apply from 1 January 2027 to significant decisions, including employment.',
+      'Colorado repealed and replaced its 2024 AI Act in May 2026. The new law applies from 1 January 2027, though a federal court order currently pauses enforcement while a constitutional challenge is pending.'],
+ note:'Larkspur HR and TalentRank are invented. The laws are real, as of November 2026.'
+});
+
+C.push({
+ id:'pinecrest', name:'Pinecrest Outfitters', sector:'Outdoor retailer · publicly traded · Asheville, NC', tag:'Shopping AI',
+ blurb:'Two hundred stores and a website that ships to the US and Europe. Marketing wants an AI shopping assistant and personalized offers.',
+ feature:'the AI shopping assistant', pitch:'Marketing wants to launch an <b>AI shopping assistant</b> on the website, plus <b>AI-personalized loyalty offers</b> built from what shoppers browse and buy. The site ships to the US and to the EU. They want it live before the holidays.',
+ start:{sch:70, exp:30, tru:70},
+ steps:[
+  {label:'Review 1', title:'Do shoppers need to know?', text:'<p>Should shoppers be told they\'re chatting with AI rather than a person?</p>',
+   choices:[
+    {t:'Yes, clearly, at the start of every chat, for every shopper.', v:'best', fx:{exp:-10, tru:10},
+     r:'One line at the top of the chat window. Nobody complains, and it covers the EU requirement automatically.',
+     l:'The EU AI Act\'s transparency rules require telling people when they\'re interacting with an AI system, and they already apply. The vendor has to build the disclosure in; Pinecrest should check that it does. Doing it everywhere is simpler and builds trust.', ref:'AI Act transparency'},
+    {t:'Only for shoppers in the EU, where the law requires it.', v:'ok', fx:{exp:-5, sch:-5},
+     r:'It works, but engineering spends two weeks building location logic, and US shoppers who find out later feel misled.',
+     l:'Meeting the strictest rule everywhere is often cheaper than tailoring it by location. And the EU isn\'t the only place with a rule: California bars sales bots that mislead people about being bots.', ref:'AI Act transparency'},
+    {t:'No. It\'s obvious it\'s a bot.', v:'poor', fx:{exp:15, tru:-10},
+     r:'Legal isn\'t willing to bet on that. The Act\'s exception for obvious bots is read narrowly, and a chatbot with a friendly name doesn\'t qualify. A shopper in France complains to a regulator after learning the "agent" she thanked was AI.',
+     l:'Chatbots are one of the AI Act\'s transparency cases. The exception for bots that are obvious is narrow, so plan to tell people.', ref:'AI Act transparency'}
+  ]},
+  {label:'Review 2', title:'The vendor\'s standard terms', text:'<p>The chatbot vendor\'s standard terms let it use chat transcripts to train its own AI models. Shoppers will type in names, addresses and order details.</p>',
+   choices:[
+    {t:'Negotiate a business agreement that rules out training on Pinecrest\'s data and limits the vendor to providing the service.', v:'best', fx:{exp:-10, sch:-5, tru:5},
+     r:'It takes two weeks of procurement. The vendor has a standard business agreement that does exactly this.',
+     l:'What the vendor can do with your data is decided in the contract. Business agreements usually rule out training; standard and consumer terms often don\'t.', ref:'AI vendors as third parties'},
+    {t:'Accept the terms, and mention it in the privacy policy.', v:'ok', fx:{exp:10},
+     r:'Disclosure helps, but shoppers\' order details now feed another company\'s models, and few will read the policy.',
+     l:'Disclosure isn\'t the same as limiting the use. It also may not meet GDPR for EU shoppers.', ref:'AI vendors as third parties'},
+    {t:'Accept the terms. Chat transcripts aren\'t personal data.', v:'poor', fx:{exp:20, tru:-10},
+     r:'They are: they\'re full of names, addresses and order numbers.',
+     l:'Anything that identifies a shopper is personal data, wherever it ends up.', ref:'Personal data'}
+  ]},
+  {label:'Review 3', title:'Personalized offers', text:'<p>The personalized offers will combine what shoppers browse and buy, and will be shown through advertising partners on other websites too.</p>',
+   choices:[
+    {t:'Get consent from EU shoppers before using their data for ads on other sites. In the US, let shoppers opt out of sale and sharing and honor Global Privacy Control signals.', v:'best', fx:{exp:-10, tru:5, sch:-5},
+     r:'About 8% opt out. The offers still work for everyone else.',
+     l:'California treats using data for ads across other sites as "sharing," and requires honoring opt-out signals such as Global Privacy Control. For EU shoppers, cross-site ad tracking generally needs consent first.', ref:'Sale, sharing and opt-outs'},
+    {t:'Add a "Do Not Sell or Share" link, but ignore browser signals.', v:'ok', fx:{exp:10},
+     r:'The link works. The browser signals don\'t, and California\'s regulator has fined companies for exactly that.',
+     l:'In California, a business has to honor opt-out preference signals. And for EU shoppers, an opt-out isn\'t enough; tracking for ads needs consent.', ref:'Sale, sharing and opt-outs'},
+    {t:'No opt-out needed. It\'s only marketing.', v:'poor', fx:{exp:20, tru:-10},
+     r:'Pinecrest\'s privacy counsel stops the launch.',
+     l:'Marketing is exactly what California\'s "sale" and "sharing" rules were written for.', ref:'Sale, sharing and opt-outs'}
+  ]},
+  {label:'Review 4', title:'A shortcut from marketing', text:'<p>While the assistant is being built, the marketing team starts pasting customer complaint emails into a free consumer chatbot to draft replies faster.</p>',
+   choices:[
+    {t:'Move them to the approved business tool, under the agreement that rules out training.', v:'best', fx:{exp:-10, tru:5},
+     r:'The team gets the same speed with a tool the company controls. Usage of the free chatbot drops off.',
+     l:'Pasting customer data into a personal chatbot account is a disclosure to a third party. Give people a sanctioned tool that meets the need.', ref:'Shadow AI'},
+    {t:'Allow it, as long as they delete names first.', v:'ok', fx:{exp:5},
+     r:'Most do, most of the time. Order numbers and addresses still go in.',
+     l:'Asking people to scrub data by hand rarely holds up under deadline pressure.', ref:'Shadow AI'},
+    {t:'Ban AI tools in marketing, with no approved alternative.', v:'poor', fx:{sch:-5, exp:5, tru:-5},
+     r:'The pasting moves to personal phones, where nobody can see it.',
+     l:'A ban without an approved alternative tends to push use out of sight.', ref:'Shadow AI'}
+  ]},
+  {label:'News flash', flash:true, title:'"The fine didn\'t stick"', text:'<div class="inject"><span class="eyebrow">March 2026 · Rome</span>A court in Rome annuls the €15 million fine Italy\'s data protection authority imposed on OpenAI over ChatGPT.</div><p>Marketing forwards the headline: "See? GDPR doesn\'t really apply to AI chatbots. Can we relax the EU safeguards?"</p>',
+   choices:[
+    {t:'No change. The court said Italy was the wrong regulator, not that the processing was lawful.', v:'best', fx:{exp:-10, tru:5},
+     r:'Legal sends a two-line explanation. The safeguards stay.',
+     l:'The court ruled that Ireland\'s regulator was in charge, because OpenAI had set up its EU base there before Italy\'s decision was final. It never decided whether OpenAI broke the rules.', ref:'GDPR and AI'},
+    {t:'Wait for another regulator to rule before deciding anything.', v:'ok', fx:{sch:-5, exp:5},
+     r:'Nothing gets decided for a month, and the holiday launch slips.',
+     l:'The safeguards don\'t depend on how one case turns out. GDPR applies to AI regardless.', ref:'GDPR and AI'},
+    {t:'Relax the EU safeguards. The fine was thrown out.', v:'poor', fx:{exp:20, tru:-10, sch:5},
+     r:'Legal finds out after launch, and the safeguards go back in under time pressure.',
+     l:'A headline about a case isn\'t a change in the law. Read why the court ruled the way it did.', ref:'GDPR and AI'}
+  ]},
+  {label:'Launch call', title:'Ship it?', text:'<p>It\'s three weeks before the holiday rush. What\'s your recommendation?</p>',
+   choices:[
+    {t:'Launch with AI disclosure, the business agreement signed, and opt-outs and browser signals working.', v:'best', fx:{tru:10, exp:-5},
+     r:'It launches a week later than marketing wanted, and in time for the holidays.',
+     l:'Most of the privacy work for an AI feature is contracts, notices and opt-outs: ordinary controls applied to a new tool.', ref:'Launch decisions'},
+    {t:'Launch the assistant now, and the personalized offers after the holidays.', v:'ok', fx:{sch:-5, exp:-5},
+     r:'A reasonable split. Marketing is unhappy about the offers.',
+     l:'Splitting a launch can let the lower-risk part ship first.', ref:'Launch decisions'},
+    {t:'Launch everything now and fix the privacy issues in January.', v:'poor', fx:{exp:25, tru:-15, sch:10},
+     r:'The holiday traffic is the highest of the year, and so is the volume of data handled without the safeguards.',
+     l:'Fixing it later means every shopper in the busiest season is exposed in the meantime.', ref:'Launch decisions'}
+  ]}
+ ],
+ law:['EU AI Act transparency rules: people must be told when they\'re interacting with an AI system such as a chatbot. They have applied since August 2026.',
+      'California requires businesses to let consumers opt out of the sale and sharing of personal information, and to honor opt-out preference signals such as Global Privacy Control. In the EU, tracking for ads on other sites generally needs consent first.',
+      'FTC staff warned in January 2024 that AI companies using customer data in ways they didn\'t promise may be breaking the law: "There is no AI exemption from the laws on the books."',
+      'A Rome court annulled Italy\'s €15 million fine against OpenAI in March 2026 because Ireland\'s regulator was in charge, without deciding whether the processing was lawful.'],
+ note:'Pinecrest Outfitters and its numbers are invented. The laws and cases are real, as of November 2026.'
+});
+
+C.push({
+ id:'harbor', name:'Harbor Ridge Health', sector:'Regional health system · Norfolk, Virginia', tag:'HIPAA',
+ blurb:'Three hospitals and forty clinics, with telehealth patients in several states. Clinicians want an AI scribe.',
+ feature:'the AI scribe', pitch:'Clinicians are burned out on paperwork. They want an <b>AI scribe</b> that records each patient visit, in person or by telehealth, and drafts the clinical note. A vendor is ready to start next month.',
+ start:{sch:70, exp:30, tru:70},
+ steps:[
+  {label:'Review 1', title:'Before any recording leaves the building', text:'<p>The scribe vendor will receive recordings of patient visits and the notes drawn from them. What has to be in place first?</p>',
+   choices:[
+    {t:'A business associate agreement with the vendor, signed before any recording reaches it.', v:'best', fx:{exp:-10, sch:-5},
+     r:'The vendor has a standard agreement ready. Legal reviews it in a week.',
+     l:'A vendor that handles protected health information for a covered entity is a business associate, and HIPAA requires an agreement with it.', ref:'HIPAA business associates'},
+    {t:'The vendor\'s SOC 2 report, which shows its security controls work.', v:'ok', fx:{exp:10},
+     r:'The report is useful due diligence, but it isn\'t the contract HIPAA requires.',
+     l:'A SOC 2 report is evidence about controls. A business associate agreement is a legal requirement. You need both.', ref:'HIPAA business associates'},
+    {t:'Nothing special. It\'s just audio, not a medical record.', v:'poor', fx:{exp:20, tru:-5},
+     r:'A recording of a patient describing symptoms to a doctor is protected health information.',
+     l:'Audio is no different from text under HIPAA when it\'s about a patient\'s care.', ref:'HIPAA business associates'}
+  ]},
+  {label:'Review 2', title:'Who agrees to the recording?', text:'<p>Virginia generally requires only one party\'s consent to record a conversation, so the clinician\'s consent is enough there. But some telehealth patients are in states that require everyone\'s consent. How should consent work?</p>',
+   choices:[
+    {t:'Tell every patient and ask for agreement before recording, with an easy way to say no.', v:'best', fx:{exp:-10, tru:10, sch:-5},
+     r:'A short script for clinicians and a checkbox at telehealth check-in. About 4% decline, and their visits are documented the old way.',
+     l:'Asking everyone covers the stricter states automatically, and patients trust a scribe they agreed to.', ref:'Recording consent'},
+    {t:'Rely on Virginia\'s one-party rule. The clinician consents.', v:'ok', fx:{exp:10},
+     r:'That works for in-person visits in Virginia. It doesn\'t for a telehealth patient in California.',
+     l:'About a dozen states, including California, generally require everyone on a private call to agree to being recorded.', ref:'Recording consent'},
+    {t:'Record by default, and mention it in the privacy notice.', v:'poor', fx:{exp:20, tru:-15},
+     r:'A patient finds out from the notice months later and posts about it. Others start asking.',
+     l:'Burying recording in a notice nobody reads isn\'t consent, and in all-party states it may not be legal.', ref:'Recording consent'}
+  ]},
+  {label:'Review 3', title:'The vendor wants to learn from your visits', text:'<p>The vendor asks to use "de-identified" visit recordings to improve its models, and says de-identified data isn\'t covered by HIPAA.</p>',
+   choices:[
+    {t:'Only if the agreement permits it and the data truly meets HIPAA\'s de-identification standard. Raw voice recordings wouldn\'t.', v:'best', fx:{exp:-10, tru:5},
+     r:'The vendor agrees to use transcripts with identifiers removed, never audio, under a written amendment.',
+     l:'De-identified data falls outside HIPAA, but a business associate can de-identify only if its agreement allows it. Raw recordings almost never qualify: patients say names and dates aloud, and the voice itself can identify them.', ref:'De-identification'},
+    {t:'Allow it. De-identified data isn\'t covered by HIPAA.', v:'ok', fx:{exp:10},
+     r:'True for data that\'s properly de-identified. Recordings full of patients\' names, dates and voices aren\'t.',
+     l:'Check what "de-identified" means before agreeing to it. HIPAA has a specific standard.', ref:'De-identification'},
+    {t:'Allow anything that improves the product.', v:'poor', fx:{exp:20, tru:-10},
+     r:'Recordings of identifiable patients now help train a model sold to other hospitals.',
+     l:'Training on patient data is a use the agreement has to permit. Better accuracy doesn\'t authorize it.', ref:'De-identification'}
+  ]},
+  {label:'Review 4', title:'Into the record', text:'<p>The scribe drafts a clinical note after each visit. How should notes get into the patient\'s record?</p>',
+   choices:[
+    {t:'Every note is reviewed and signed by the clinician before it\'s final.', v:'best', fx:{tru:5, exp:-5},
+     r:'Reviewing a draft takes a minute or two. Clinicians catch a medication the scribe misheard in the first week.',
+     l:'AI models can produce confident, wrong text. A person signs off on what goes into a medical record.', ref:'Hallucination and review'},
+    {t:'Spot-check 10% of notes each week.', v:'ok', fx:{exp:10},
+     r:'Most notes are fine. The 90% nobody reads include a few that aren\'t.',
+     l:'Sampling can work for low-risk outputs. A medical record isn\'t one.', ref:'Hallucination and review'},
+    {t:'File them automatically. The vendor says it\'s 98% accurate.', v:'poor', fx:{exp:20, tru:-10, sch:5},
+     r:'The 2% includes a wrong allergy in a patient\'s chart.',
+     l:'A 2% error rate across thousands of visits a week is a lot of wrong records.', ref:'Hallucination and review'}
+  ]},
+  {label:'News flash', flash:true, title:'The notetaker lawsuit', text:'<div class="inject"><span class="eyebrow">August 2026 · San Jose</span>A federal judge lets the core privacy claims go forward in a class action against Otter.ai, an AI meeting notetaker accused of recording people who never agreed to it.</div><p>The board\'s audit committee chair forwards the article: "Are we exposed?"</p>',
+   choices:[
+    {t:'Re-check the consent flow, including telehealth patients in all-party states, and confirm the vendor uses recordings only as the agreement allows.', v:'best', fx:{exp:-10, tru:5},
+     r:'The review finds one telehealth clinic that skipped the consent step. It\'s fixed within a week, and the board gets a clear answer.',
+     l:'When a case like this lands, check your own controls against what it alleges. Recording without consent and unexpected uses of recordings are both in play.', ref:'Recording consent'},
+    {t:'Ask the vendor whether it has been sued.', v:'ok', fx:{exp:5},
+     r:'It hasn\'t. That doesn\'t tell you whether your consent process works.',
+     l:'Whether the vendor has been sued says little about whether your own consent process works.', ref:'Recording consent'},
+    {t:'Nothing. That case is about meeting notetakers, not healthcare.', v:'poor', fx:{exp:15, tru:-5},
+     r:'The board chair isn\'t satisfied, and asks the internal auditors to look.',
+     l:'The technology and the legal theory are the same. The setting doesn\'t make you immune.', ref:'Recording consent'}
+  ]},
+  {label:'Launch call', title:'Ship it?', text:'<p>The vendor is ready, and clinicians are asking when they get the scribe. What\'s your recommendation?</p>',
+   choices:[
+    {t:'Pilot in two clinics with signed agreements, patient consent and clinician sign-off, then expand.', v:'best', fx:{tru:10, exp:-5, sch:-5},
+     r:'The pilot goes well. Clinicians in the other clinics start asking when it\'s their turn.',
+     l:'A pilot keeps the blast radius small while you learn how the tool behaves in real visits.', ref:'Launch decisions'},
+    {t:'Wait a year to see how the lawsuits play out.', v:'ok', fx:{sch:-25, tru:-5},
+     r:'The burnout doesn\'t wait. Two clinicians start using a consumer app on their phones.',
+     l:'Saying no without an alternative can push people to unapproved tools.', ref:'Launch decisions'},
+    {t:'Roll it out to every clinic next month.', v:'poor', fx:{exp:20, sch:10, tru:-10},
+     r:'Every problem a pilot would have caught now happens forty times.',
+     l:'Start small when patient records are involved.', ref:'Launch decisions'}
+  ]}
+ ],
+ law:['HIPAA requires a business associate agreement with any vendor that handles protected health information for a covered entity.',
+      'HIPAA\'s de-identification Safe Harbor method lists 18 identifiers to remove, including biometric identifiers such as voice prints.',
+      'Recording consent varies by state. Virginia generally requires one party\'s consent; about a dozen states, including California, generally require everyone\'s.',
+      'In August 2026, a federal judge allowed the core privacy claims to proceed in the Otter.ai class action.'],
+ note:'Harbor Ridge Health and its numbers are invented. The laws and cases are real, as of November 2026.'
+});
+
+/* ---------- engine ---------- */
+var app = document.getElementById('app'), homeBtn = document.getElementById('homeBtn');
+var co, si, picks, meters, armed = false, done = false;
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function clamp(n){return Math.max(0,Math.min(100,n));}
+function shuffle(a){ for(var q=a.length-1;q>0;q--){var w=Math.floor(Math.random()*(q+1)),t=a[q];a[q]=a[w];a[w]=t;} return a; }
+function shortOf(t){ var s = t.split(/[.:;]/)[0]; return s.length>60 ? s.slice(0,58)+'…' : s; }
+
+function intro(){
+  homeBtn.hidden = true; done = false;
+  var h = '<section class="intro"><div><span class="eyebrow">About 10 to 12 minutes · Law as of November 2026</span><h2>An AI feature is ready to launch. Is it?</h2><p class="lede">You sit on the launch review for a new AI feature. Product wants a date; legal wants answers. Work out which rules apply, what has to change before launch, and what can wait. Partway through, the law changes.</p><div class="row"><button class="primary" id="go">Start a random scenario</button><span class="note">Each play picks one of three companies.</span></div></div>'+
+  '<aside class="rules"><h3>How it works</h3><ul><li>Four review questions, a news flash, then the launch call.</li><li>Your choices move three meters: launch schedule, legal exposure and customer trust. Moving fast isn\'t free, and neither is caution.</li><li>Every decision goes in the review log on the right.</li><li>The debrief explains each decision and summarizes the real laws behind the scenario.</li></ul><p class="note" style="margin:10px 0 0">An educational game, not legal advice. AI law is changing quickly; check the current rules before relying on anything here.</p></aside></section>'+
+  '<section class="sec"><h3>Or pick a scenario</h3><div class="cases">';
+  C.forEach(function(c,i){h+='<button class="case" data-i="'+i+'"><span class="tag">'+esc(c.tag)+'</span><h3>'+esc(c.name)+'</h3><p>'+esc(c.sector)+'</p><p>'+esc(c.blurb)+'</p></button>';});
+  h+='</div><p class="note" style="margin-top:14px">The companies are invented, and are the same three as in <i>The 2AM Page</i> and <i>Keys to the Agent</i>. The laws and cases are real.</p></section>';
+  app.innerHTML = h;
+  document.getElementById('go').onclick = function(){start(Math.floor(Math.random()*C.length));};
+  [].forEach.call(app.querySelectorAll('.case'),function(b){b.onclick=function(){start(+b.getAttribute('data-i'));};});
+  window.scrollTo(0,0);
+}
+function start(i){
+  co = C[i]; si = -1; picks = []; done = false;
+  meters = {sch:co.start.sch, exp:co.start.exp, tru:co.start.tru};
+  homeBtn.hidden = false; brief();
+}
+function meterHTML(k){
+  var v = meters[k], hi = (k!=='exp'), good = hi ? v>=60 : v<=40, bad = hi ? v<40 : v>65;
+  var col = good ? 'var(--good)' : bad ? 'var(--red)' : 'var(--amber)';
+  return '<div class="meter"><div class="lab"><span>'+M[k]+' <span class="hint">('+HINT[k]+')</span></span><b>'+v+'</b></div><div class="bar" role="progressbar" aria-label="'+M[k]+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+v+'"><i style="width:'+v+'%;background:'+col+'"></i></div></div>';
+}
+function rail(){
+  var h = '<aside class="rail"><div class="board"><div class="eyebrow">Launch review</div><div class="co" style="margin-top:6px">'+esc(co.name)+'</div><div class="co-sub">'+esc(co.sector)+'</div>'+meterHTML('sch')+meterHTML('exp')+meterHTML('tru')+'</div>';
+  h += '<div class="board"><h3>Review log</h3><ul class="log" aria-live="polite">';
+  if(!picks.length) h += '<li><span class="empty">No entries yet.</span></li>';
+  picks.forEach(function(p){
+    var c = p.v==='best'?'var(--good)':p.v==='ok'?'var(--amber)':'var(--red)';
+    h += '<li><time>'+esc(p.label)+'</time><span><span class="dot" style="background:'+c+'"></span>'+esc(p.short)+'</span></li>';
+  });
+  return h + '</ul></div></aside>';
+}
+function refreshRail(){ var tmp=document.createElement('div'); tmp.innerHTML=rail(); var r=app.querySelector('.rail'); if(r) r.innerHTML=tmp.querySelector('.rail').innerHTML; }
+function progress(){
+  var h = '<div class="progress" aria-hidden="true">';
+  co.steps.forEach(function(s,n){ h += '<span class="'+(n<si?'done':n===si?'now':'')+(s.flash?' live':'')+'"></span>'; });
+  return h + '</div>';
+}
+function brief(){
+  app.innerHTML = '<div class="game"><section class="scene"><div class="scene-head"><span class="clock">Launch review</span><span class="step">The request</span></div><div class="scene-body"><h2>'+esc(co.name)+'</h2><p>'+co.pitch+'</p><p>Before '+esc(co.feature)+' ships, it goes through launch review, and you\'re on it. Four questions, then the launch call. Expect the law to move at least once along the way.</p><button class="primary" id="begin">Start the review</button></div></section>'+rail()+'</div>';
+  document.getElementById('begin').onclick = function(){ si = 0; scene(); }; window.scrollTo(0,0);
+}
+function scene(){
+  var s = co.steps[si];
+  var h = '<div class="game"><section class="scene"><div class="scene-head"><span class="clock">'+esc(s.label)+'</span><span class="step">Decision '+(si+1)+' of '+co.steps.length+'</span></div><div class="scene-body"><h2>'+esc(s.title)+'</h2>'+s.text+'<div class="choices">';
+  shuffle(s.choices.map(function(_,j){return j;})).forEach(function(j,n){ h += '<button class="choice" data-j="'+j+'"><span class="k">'+String.fromCharCode(65+n)+'</span><span>'+esc(s.choices[j].t)+'</span></button>'; });
+  h += '</div><div id="res"></div></div>'+progress()+'</section>'+rail()+'</div>';
+  app.innerHTML = h;
+  [].forEach.call(app.querySelectorAll('.choice'),function(b){b.onclick=function(){choose(+b.getAttribute('data-j'));};});
+  window.scrollTo(0,0);
+}
+function choose(j){
+  var s = co.steps[si], c = s.choices[j];
+  for(var k in (c.fx||{})) meters[k] = clamp(meters[k]+c.fx[k]);
+  picks.push({label:s.label, title:s.title, t:c.t, short:shortOf(c.t), v:c.v, l:c.l, ref:c.ref});
+  [].forEach.call(app.querySelectorAll('.choice'),function(b){b.disabled=true; if(+b.getAttribute('data-j')===j) b.classList.add('picked');});
+  var lab = c.v==='best'?'Strong call':c.v==='ok'?'Partly right':'Costly call', last = si===co.steps.length-1, res = document.getElementById('res');
+  res.innerHTML = '<div class="result '+c.v+'" tabindex="-1"><span class="verdict">'+lab+'</span><p>'+esc(c.r)+'</p><p class="lesson">'+esc(c.l)+' <span class="eyebrow">'+esc(c.ref)+'</span></p><button class="primary" id="next">'+(last?'See the debrief':'Continue')+'</button></div>';
+  refreshRail();
+  var box = res.firstChild; box.focus({preventScroll:true}); box.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'nearest'});
+  document.getElementById('next').onclick = function(){ si++; if(si<co.steps.length) scene(); else end(); };
+}
+function end(){
+  done = true;
+  var pts = picks.reduce(function(a,p){return a+(p.v==='best'?2:p.v==='ok'?1:0);},0), pct = pts/(picks.length*2);
+  var best = picks.filter(function(p){return p.v==='best';}).length, flash = picks.filter(function(p,i){return co.steps[i].flash;})[0];
+  var title, sub;
+  if(pct>=0.8){ title='Shipped, and defensible'; sub='You worked out which rules applied, built the controls into the product, and didn\'t panic when the law moved. The launch probably slipped a little. That\'s normal for an AI feature that touches people\'s data.'; }
+  else if(pct>=0.45){ title='Shipped, with homework'; sub='The feature launched, but a few calls left gaps that someone will have to close later, usually at a worse time. Look at which ones, and which law each one touched.'; }
+  else { title='Shipped, and exposed'; sub='Most of the trouble traces back to assuming a rule didn\'t apply, or treating a headline as a change in the law. In AI, the existing privacy and consumer protection laws already reach most of what you\'re doing.'; }
+  var h = '<div class="game"><section class="end"><span class="eyebrow">'+esc(co.name)+' · launch review debrief</span><p class="printonly note" style="margin:4px 0 0">Saved '+new Date().toLocaleString()+'</p><h2>'+title+'</h2><p class="lede" style="max-width:62ch">'+sub+'</p>';
+  h += '<div class="grid2"><div class="stat"><div class="n">'+best+' / '+picks.length+'</div><div class="l">strong calls</div></div><div class="stat"><div class="n">'+meters.sch+'</div><div class="l">launch schedule (higher is better)</div></div><div class="stat"><div class="n">'+meters.exp+'</div><div class="l">legal exposure (lower is better)</div></div><div class="stat"><div class="n">'+meters.tru+'</div><div class="l">customer trust (higher is better)</div></div></div>';
+  if(flash) h += '<div class="outcome '+(flash.v==='best'?'l0':flash.v==='ok'?'l1':'l2')+'"><span class="verdict">When the law moved</span><p>'+esc(flash.l)+'</p></div>';
+  h += '<div class="sec"><h3>Your decisions</h3><div class="debrief">';
+  picks.forEach(function(p){ var lab = p.v==='best'?'Strong call':p.v==='ok'?'Partly right':'Costly call';
+    h += '<div class="dl '+p.v+'"><div class="h"><span>'+esc(p.label)+' · '+esc(p.title)+'</span><span>'+lab+' · '+esc(p.ref)+'</span></div><p><b>You chose:</b> '+esc(p.t)+'</p><p class="lesson" style="margin:6px 0 0;font-size:14px;color:var(--muted)">'+esc(p.l)+'</p></div>'; });
+  h += '</div></div><div class="real"><h3>The law behind this scenario, as of November 2026</h3><ul>';
+  co.law.forEach(function(x){h+='<li>'+esc(x)+'</li>';});
+  h += '</ul><p class="note" style="margin-top:8px">'+esc(co.note)+' An educational game, not legal advice; these rules are changing quickly.</p></div>';
+  h += '<div class="row"><button class="primary" id="again">Play another scenario</button><button class="linkbtn" id="same">Replay this one</button><button class="linkbtn" id="pdf">Download PDF</button><span class="note">Choose "Save as PDF" in the print window.</span></div></section>'+rail()+'</div>';
+  app.innerHTML = h;
+  var cur = C.indexOf(co);
+  document.getElementById('again').onclick = function(){ var k; do{ k=Math.floor(Math.random()*C.length);}while(k===cur && C.length>1); start(k); };
+  document.getElementById('same').onclick = function(){ start(cur); };
+  document.getElementById('pdf').onclick = function(){ window.print(); };
+  window.scrollTo(0,0);
+}
+homeBtn.onclick = function(){
+  var inGame = picks && picks.length && !done;
+  if(inGame && !armed){ armed = true; homeBtn.textContent = 'Leave this scenario?'; setTimeout(function(){ armed = false; homeBtn.textContent = 'New scenario'; }, 4000); return; }
+  armed = false; homeBtn.textContent = 'New scenario'; intro();
+};
+intro();
+})();
+</script>
+</body>
+</html>
